@@ -15,19 +15,19 @@ A simplified audio Recorder for HTML5, which uses the WebAudio API to export mic
 
 		setTimeout(function(){
 	      
-		 recorder.stop();
+			 recorder.stop();
 
-		 recorder.exportMP3(function(mp3Blob){
-		          
-		           
-		        console.log("Here is your blob: " + URL.createObjectURL(mp3Blob));
-		        //Do something with your blob
-		       
-		 
-		 });
-	  
+			 recorder.exportMP3(function(mp3Blob){
+				  
+				   
+				console.log("Here is your blob: " + URL.createObjectURL(mp3Blob));
+				//Do something with your blob
+			       
+			 
+			 });
+			  
 		}, 5000);       
-        
+
             
      });
 
