@@ -32,7 +32,7 @@ A simplified audio Recorder for HTML5, which uses the WebAudio API to export mic
             
      });
 
-Creates a recorder instance.
+
 
 - **config** - (*optional*) A configuration object (see **config** section below)
 
