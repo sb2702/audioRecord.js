@@ -8,9 +8,9 @@ A simplified audio Recorder for HTML5, which uses the WebAudio API to export mic
 ### Syntax
 #### Constructor
 
-   Recorder.new(function(recorder){
-     var rec = recorder;
-   });
+     Recorder.new(function(recorder){
+       var rec = recorder;
+      });
 
 Creates a recorder instance.
 
