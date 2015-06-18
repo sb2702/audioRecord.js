@@ -2,7 +2,7 @@
 
 A simplified audio Recorder for HTML5, which uses the WebAudio API to export microphone input to wav or mp3 files. Based on https://github.com/mattdiamond/Recorderjs
 
-
+**TODO** Figure out how to encode OGG audio as well
 
 ### Quick and dirty Usage
 
