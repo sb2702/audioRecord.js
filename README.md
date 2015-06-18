@@ -39,10 +39,10 @@ A simplified audio Recorder for HTML5, which uses the WebAudio API to export mic
 **Basic / Async Construction** The recorder object is instatiated asynchronously as shown below. Calling the recorder function will ask the client for access to the device's microphone. Once the client agrees, the recorder object
 
 
-	     Recorder.new(function(recorder [,config]){  
+	     Recorder.new(function(recorder){  
 	      // Create a recorder object (this will ask browser for microphone access)
 
-	     });
+	     } [,config]);
 
 
 **From Media Source / Sync Construction**  The recorder object can be instatiated synchronously if you want to specify the media source manually.
