@@ -9,7 +9,8 @@ A simplified audio Recorder for HTML5, which uses the WebAudio API to export mic
 #### Quick and dirty Usage
 
 
-     Recorder.new(function(recorder){  // Create a recorder object (this will ask browser for microphone access)
+     Recorder.new(function(recorder){  
+      // Create a recorder object (this will ask browser for microphone access)
 
 		recorder.start();         // Start recording
 
