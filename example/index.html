@@ -85,7 +85,7 @@
 
   window.onload = function init() {
 
-    Recorder.new(function(recorderObject){
+    audioRecorder.requestDevice(function(recorderObject){
 
       recorder = recorderObject;
     });

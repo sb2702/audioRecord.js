@@ -106,13 +106,13 @@
 
 
 
-  var Recorder =  {
+  var audioRecorder =  {
 
 	  fromSource: function(src, cfg){
 		 return new RecorderObject(src, cfg);
 	  },
 
-	  new: function (callback, cfg) {
+	  requestDevice: function (callback, cfg) {
 
 		  cfg = cfg || {};
 		  callback = callback || function(){};
@@ -153,7 +153,7 @@
 
 
 
-  window.Recorder = Recorder;
+  window.audioRecorder = audioRecorder;
 
 
 
