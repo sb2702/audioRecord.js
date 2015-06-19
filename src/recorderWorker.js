@@ -7,7 +7,7 @@ var recLength = 0,
   sampleRate;
 
 var mp3Encoder;
-
+var vorbisEncoder;
 
 
 this.onmessage = function(e){
@@ -28,6 +28,10 @@ this.onmessage = function(e){
     case 'exportMP3':
       exportMP3();
       break;
+
+    case 'exportOGG':
+      exportOGG();
+      break;
     case 'clear':
       clear();
       break;
@@ -37,6 +41,7 @@ this.onmessage = function(e){
 function init(config){
   sampleRate = config.sampleRate;
   mp3Encoder = new MP3Encoder({ mp3LibPath: config.mp3LibPath});
+  vorbisEncoder = new VorbisEncoder({vorbisLibPath: config.vorbisLibPath})
 }
 
 function record(inputBuffer){
@@ -65,10 +70,22 @@ function exportMP3(){
    this.postMessage(mp3Blob);
 
 
+}
 
-};
+
+function exportOGG(){
+
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var oggBlob = vorbisEncoder.toFile(1, [bufferL], {
+      channels:1,
+      quality: 1.0,
+      sampleRate: sampleRate
+  });
+
+  this.postMessage(oggBlob);
 
 
+}
 
 
 function getBuffer() {
@@ -188,8 +205,7 @@ var MP3Encoder = function (config) {
       Lame.set_bitrate(mp3codec, config.bitrate || 128);
       Lame.init_params(mp3codec);
 
-
-  };
+  }
 
   function encode (buffer, config){
 
@@ -202,22 +218,21 @@ var MP3Encoder = function (config) {
 
     return mp3data;
 
-
-  };
+  }
 
 
   function toFile(buffer, config){
 
     var mp3data = encode(buffer, config);
 
+    console.log(mp3data.data);
+
     var mp3Blob = new Blob([mp3data.data], {type: 'audio/mp3'});
 
 
     return mp3Blob;
 
-
-
-  };
+  }
 
 
 
@@ -227,5 +242,141 @@ var MP3Encoder = function (config) {
 
 };
 
+
+
+var VorbisEncoder = function(config){
+
+
+  var state = null;
+
+  var libPath = config.vorbisLibPath || 'libvorbis.module.min.js';
+
+  importScripts(libPath);
+
+  var encoderData = [];
+
+
+  function init(options){
+
+        flush();
+        encoderData = [];
+
+
+    state = Module.lib.encoder_create_vbr(
+        options.channels ||1,
+        options.sampleRate || 44100,
+        options.quality || 0.7
+    );
+
+    if (state === 0) {
+        // error handling
+    }
+
+  }
+
+
+  function clear(){
+
+    encoderData = [];
+    Module.lib.encoder_clear_data(state);
+
+  }
+
+  function flush(){
+
+    var data = Module.lib.helpers.get_data(state);
+
+
+    if (data.length === 0) {
+      return null;
+    }
+
+    Module.lib.encoder_clear_data(state);
+
+    encoderData.push(data);
+
+
+  }
+
+  function writeHeaders(){
+
+
+
+    Module.lib.encoder_write_headers(state);
+
+  }
+
+  function encode(buffers, samples){
+
+
+    buffers = buffers.map(function (typed) {
+      return typed.buffer;
+    });
+
+
+    buffers = buffers.map(function (buffer) {
+      return new Float32Array(buffer);
+    });
+
+
+
+    samples = buffers[0].length;
+
+    Module.lib.helpers.encode(state, samples, buffers);
+
+
+
+
+  }
+
+  function finish (){
+
+    Module.lib.encoder_finish(state);
+
+
+    Module.lib.encoder_destroy(state);
+  }
+
+
+  function makeBlob(){
+
+    return new Blob(encoderData, { type: 'audio/ogg' });
+  }
+
+
+
+  function toFile (samples, buffers, options){
+
+
+    console.log("doing init");
+    init(options);
+
+    console.log("writing headers");
+    writeHeaders();
+
+    console.log("encoding sample");
+    encode(buffers, samples);
+
+    console.log("Finishing encoder");
+
+    finish();
+
+    console.log("doing flush");
+    flush();
+
+    console.log("getting blob");
+
+    return makeBlob();
+
+
+  }
+
+
+  this.toFile = toFile;
+
+
+
+
+};
 
 

@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <h1>Record to MP3 Test</h1>
+  <h1>Audio Recording test</h1>
 
   <button onclick="startRecording(this);">record</button>
   <button onclick="stopRecording(this);" disabled>stop</button>
@@ -57,30 +57,75 @@
 
   function createDownloadLink() {
 
-    __log('Exporting to mp3');
-     recorder.exportMP3(function(blob) {
+
+    __log('Exporting to OGG');
 
 
-       __log('MP3 file successfully exported');
+    recorder.exportOGG(function(blob) {
 
-       var url = URL.createObjectURL(blob);
 
-       console.log(url);
+      __log('OGG file successfully exported');
 
-       var link = document.createElement('a');
-       link.href = url;
-       link.innerHTML = "Recording #" + recording;
+      console.log("Ogg file successfully exported");
 
-       link.download = "example.mp3";
 
-       var li2 = document.createElement('li');
-       li2.appendChild(link);
-       document.getElementById("recordingslist").appendChild(li2);
+      console.log(blob);
+      var url = URL.createObjectURL(blob);
+
+      console.log(url);
+
+      var link = document.createElement('a');
+      link.href = url;
+      link.innerHTML = "Recording #" + recording + "in ogg";
+
+      link.download = "example.ogg";
+
+      var li2 = document.createElement('li');
+      li2.appendChild(link);
+      document.getElementById("recordingslist").appendChild(li2);
+
+
+
+
+
+      __log('Exporting to mp3');
+      recorder.exportMP3(function(blob) {
+
+
+        __log('MP3 file successfully exported');
+
+
+        console.log(blob);
+        var url = URL.createObjectURL(blob);
+
+        console.log(url);
+
+        var link = document.createElement('a');
+        link.href = url;
+        link.innerHTML = "Recording #" + recording + " in mp3";
+
+        link.download = "example.mp3";
+
+        var li2 = document.createElement('li');
+        li2.appendChild(link);
+        document.getElementById("recordingslist").appendChild(li2);
+
+
+
+      });
+
+
+
 
 
 
 
     });
+
+
+
+
+
   }
 
   window.onload = function init() {
