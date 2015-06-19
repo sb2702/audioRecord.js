@@ -15,8 +15,8 @@
 		this.context.createJavaScriptNode).call(this.context,
 			bufferLen, 2, 2);
 		worker = new Worker(config.workerPath || WORKER_PATH);
-		var mp3LibPath = config.mp3LibPath || 'libmp3lame.min.js';
-		var vorbisLibPath = config.mp3LibPath || 'libvorbis.module.min.js';
+		var mp3LibPath = config.mp3LibPath || 'lame.all.js';
+		var vorbisLibPath = config.vorbisLibPath || 'libvorbis.module.min.js';
 
 		worker.onmessage = function(e){
 			var blob = e.data;
@@ -97,6 +97,8 @@
 
 		this.node.onaudioprocess = function(e){
 			if (!recording) return;
+
+
 			worker.postMessage({
 				command: 'record',
 				buffer: [
