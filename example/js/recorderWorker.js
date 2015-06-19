@@ -1,13 +1,29 @@
-
-
 var recLength = 0,
   recBuffersL = [],
   recBuffersR = [],
   bits        = 16,
-  sampleRate;
+  sampleRate,
+    recordAsMP3 = false,
+    recordAsOGG = false;
+
+
+var recBufferMP3 =[];
+
 
 var mp3Encoder;
 var vorbisEncoder;
+
+var mp3defaultConfig = { mode : 3,  channels:1};
+
+
+
+vorbisdefaultConfig = {
+  channels:1,
+      quality: 1.0,
+    sampleRate: sampleRate
+};
+
+
 
 
 this.onmessage = function(e){
@@ -42,12 +58,40 @@ function init(config){
   sampleRate = config.sampleRate;
   mp3Encoder = new MP3Encoder({ mp3LibPath: config.mp3LibPath});
   vorbisEncoder = new VorbisEncoder({vorbisLibPath: config.vorbisLibPath})
+  recordAsMP3 = config.recordAsMP3 || false;
+  recordAsOGG = false;   // This has been giving me some problems
+
+
+
+  if(recordAsMP3) mp3Encoder.init(mp3defaultConfig);
+  if(recordAsOGG) {
+
+    vorbisEncoder.init(vorbisdefaultConfig);
+    vorbisEncoder.writeHeaders();
+
+  }
+
 }
 
 function record(inputBuffer){
   recBuffersL.push(inputBuffer[0]);
   //recBuffersR.push(inputBuffer[1]);
   recLength += inputBuffer[0].length;
+
+
+  if(recordAsMP3){
+
+    recBufferMP3.push(mp3Encoder.encode(inputBuffer[0]).data);
+
+  }
+
+  if(recordAsOGG){
+
+    vorbisEncoder.encode([inputBuffer[0]]);
+    vorbisEncoder.flush();
+  }
+
+
 }
 
 function exportWAV(type){
@@ -63,9 +107,15 @@ function exportWAV(type){
 
 function exportMP3(){
 
-  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var mp3Blob;
 
-  var mp3Blob = mp3Encoder.toFile(bufferL, { mode : 3,  channels:1});
+  if(recordAsMP3){
+    mp3Blob = mp3Encoder.getMP3();
+  } else{
+    var bufferL = mergeBuffers(recBuffersL, recLength);
+    mp3Blob = mp3Encoder.toFile(bufferL, mp3defaultConfig);
+  }
+
 
    this.postMessage(mp3Blob);
 
@@ -75,12 +125,16 @@ function exportMP3(){
 
 function exportOGG(){
 
-  var bufferL = mergeBuffers(recBuffersL, recLength);
-  var oggBlob = vorbisEncoder.toFile(1, [bufferL], {
-      channels:1,
-      quality: 1.0,
-      sampleRate: sampleRate
-  });
+  var oggBlob;
+
+  if(recordAsOGG){
+    oggBlob =vorbisEncoder.getOGG();
+
+  } else{
+    var bufferL = mergeBuffers(recBuffersL, recLength);
+    oggBlob = vorbisEncoder.toFile([bufferL], vorbisdefaultConfig);
+  }
+
 
   this.postMessage(oggBlob);
 
@@ -99,6 +153,8 @@ function clear(){
   recLength = 0;
   recBuffersL = [];
   recBuffersR = [];
+  recBufferMP3 = [];
+
 }
 
 function mergeBuffers(recBuffers, recLength){
@@ -207,45 +263,57 @@ var MP3Encoder = function (config) {
 
   }
 
-  function encode (buffer, config){
+  function encode (buffer){
 
-    init(config);
 
     var mp3data = Lame.encode_buffer_ieee_float(mp3codec, buffer, buffer);
+
+
+    return mp3data;
+
+  }
+
+  function finish(){
+
     Lame.encode_flush(mp3codec);
     Lame.close(mp3codec);
     mp3codec = null;
-
-    return mp3data;
 
   }
 
 
   function toFile(buffer, config){
 
-    var mp3data = encode(buffer, config);
+    init(config);
 
-    console.log(mp3data.data);
+    var mp3data = encode(buffer);
+
+    finish();
 
     var mp3Blob = new Blob([mp3data.data], {type: 'audio/mp3'});
-
 
     return mp3Blob;
 
   }
 
+  function getMP3(){
 
+    finish();
+    var mp3Blob = new Blob(recBufferMP3, {type: 'audio/mp3'});
+    return mp3Blob;
 
+  }
+
+    this.init = init;
     this.encode = encode;
     this.toFile = toFile;
-
+    this.getMP3 = getMP3;
 
 };
 
 
 
 var VorbisEncoder = function(config){
-
 
   var state = null;
 
@@ -255,12 +323,10 @@ var VorbisEncoder = function(config){
 
   var encoderData = [];
 
-
   function init(options){
 
         flush();
         encoderData = [];
-
 
     state = Module.lib.encoder_create_vbr(
         options.channels ||1,
@@ -276,64 +342,48 @@ var VorbisEncoder = function(config){
 
 
   function clear(){
-
     encoderData = [];
     Module.lib.encoder_clear_data(state);
-
   }
 
   function flush(){
 
     var data = Module.lib.helpers.get_data(state);
 
-
     if (data.length === 0) {
       return null;
     }
 
     Module.lib.encoder_clear_data(state);
-
     encoderData.push(data);
-
 
   }
 
   function writeHeaders(){
 
-
-
     Module.lib.encoder_write_headers(state);
 
   }
 
-  function encode(buffers, samples){
+  function encode(buffers){
 
 
     buffers = buffers.map(function (typed) {
       return typed.buffer;
     });
 
-
     buffers = buffers.map(function (buffer) {
       return new Float32Array(buffer);
     });
 
-
-
-    samples = buffers[0].length;
+    var samples = buffers[0].length;
 
     Module.lib.helpers.encode(state, samples, buffers);
-
-
-
 
   }
 
   function finish (){
-
     Module.lib.encoder_finish(state);
-
-
     Module.lib.encoder_destroy(state);
   }
 
@@ -343,39 +393,38 @@ var VorbisEncoder = function(config){
     return new Blob(encoderData, { type: 'audio/ogg' });
   }
 
-
-
-  function toFile (samples, buffers, options){
-
-
-    console.log("doing init");
-    init(options);
-
-    console.log("writing headers");
-    writeHeaders();
-
-    console.log("encoding sample");
-    encode(buffers, samples);
-
-    console.log("Finishing encoder");
+  function getOGG(){
 
     finish();
-
-    console.log("doing flush");
     flush();
 
-    console.log("getting blob");
+    return makeBlob();
+
+  }
+
+
+
+  function toFile (buffers, options){
+
+    init(options);
+    writeHeaders();
+    encode(buffers);
+    finish();
+    flush();
 
     return makeBlob();
 
 
   }
 
+  this.init = init;
 
+  this.writeHeaders = writeHeaders;
   this.toFile = toFile;
+  this.flush = flush;
+  this.encode = encode;
 
-
-
+  this.getOGG = getOGG;
 
 };
 

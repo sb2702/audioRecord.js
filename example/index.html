@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 <html>
+
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Live input record and playback</title>
@@ -11,6 +13,7 @@
    <link href="css/style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div></div>
 
   <h1>Audio Recording test</h1>
 
@@ -61,12 +64,24 @@
     __log('Exporting to OGG');
 
 
+
+
+    var c = Date.now();
+
+
+
     recorder.exportOGG(function(blob) {
+
+
+      var a = Date.now();
 
 
       __log('OGG file successfully exported');
 
-      console.log("Ogg file successfully exported");
+
+      __log('OGG Processed in ' + (a -c) + 'ms' );
+
+
 
 
       console.log(blob);
@@ -88,12 +103,24 @@
 
 
 
-      __log('Exporting to mp3');
-      recorder.exportMP3(function(blob) {
 
+      __log('Exporting to mp3');
+
+
+ var b = Date.now();
+
+      recorder.exportMP3(function(blob) {
 
         __log('MP3 file successfully exported');
 
+          var a = Date.now();
+
+         __log('MP3 Processed in ' + (a -b) + 'ms' );
+
+
+         var length = ((blob.size*8)/128000);
+
+        __log('MP3 duration: ' +length + ' s' );
 
         console.log(blob);
         var url = URL.createObjectURL(blob);
@@ -119,7 +146,6 @@
 
 
 
-
     });
 
 
@@ -133,7 +159,7 @@
     audioRecorder.requestDevice(function(recorderObject){
 
       recorder = recorderObject;
-    });
+    }, {recordAsOGG: true});
 
 
 

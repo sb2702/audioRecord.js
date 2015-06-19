@@ -9,8 +9,6 @@
 		var recording = false, initialized=false,
 			currCallback, worker;
 
-		console.log("Recorder Object");
-
 		var bufferLen = config.bufferLen || 4096;
 		this.context = source.context;
 		this.node = (this.context.createScriptProcessor ||
@@ -30,7 +28,9 @@
 			config: {
 				sampleRate: this.context.sampleRate,
 				mp3LibPath: mp3LibPath,
-				vorbisLibPath: vorbisLibPath
+				vorbisLibPath: vorbisLibPath,
+				recordAsMP3: config.recordAsMP3 || false,
+				recordAsOGG: config.recordAsOGG || false
 			}
 		});
 
@@ -95,8 +95,6 @@
 
 
 
-
-
 		this.node.onaudioprocess = function(e){
 			if (!recording) return;
 			worker.postMessage({
@@ -113,8 +111,7 @@
 
 
 
-	};
-
+	}
 
 
 
@@ -145,7 +142,7 @@
 
 		  }, function(e) {
 
-			  console.log("An error occurred"); //TODO: Error handling
+			  console.log("An error occurred"); //Null if something goes wrong
 			  callback(null);
 
 		  });
@@ -153,9 +150,7 @@
 	  }
 
 
-
 	};
-
 
 
 	window.audioRecorder = audioRecorder;
