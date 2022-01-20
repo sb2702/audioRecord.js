@@ -1,7 +1,7 @@
 # audioRecord.js
 
 
-⚠️This project is from 2015 and is deprecated. See the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) for a native browser recording APO
+⚠️This project is from 2015 and is deprecated. See the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) for a native browser recording API
 
 
 
