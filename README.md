@@ -1,5 +1,10 @@
 # audioRecord.js
 
+
+⚠️This project is from 2015 and is deprecated. See the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) for a native browser recording APO
+
+
+
 A simplified audio Recorder for HTML5, which uses the WebAudio API to export microphone input to wav, mp3 or ogg  files. Based on https://github.com/mattdiamond/Recorderjs, https://github.com/nusofthq/Recordmp3js and https://github.com/bjornm/libvorbis-js
 
 
